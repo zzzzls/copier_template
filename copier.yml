@@ -2,10 +2,31 @@ _jinja_extensions:
   - copier_template_extensions.TemplateExtensionLoader
   - extensions.py:SlugifyExtension
   - extensions.py:GitExtension
-  - extensions.py:CurrentYearExtension
+  - extensions.py:GlobalExtension
 
 _exclude:
-    - "extensions.py"
+    - copier.yml
+    - extensions.py
+    - .git
+    - .git/**
+    - __pycache__
+    - __pycache__/**
+    - .ruff_cache
+    - .venv
+    - uv.lock
+    - pyproject.toml
+    
+
+_tasks:
+  - command: git init
+    when: "{{ _copier_operation == 'copy' }}"
+  - command: git add .
+    when: "{{ _copier_operation == 'copy' }}"
+  - command: git commit -m "Initial commit"
+    when: "{{ _copier_operation == 'copy' }}"
+  - command: uv venv .venv --python {{python_version}}
+    when: "{{ _copier_operation == 'copy' }}"
+  - command: uv sync --all-groups
 
 # =============================================================================
 # Project Basics
@@ -14,7 +35,6 @@ _exclude:
 project_name:
   type: str
   help: "Project name (human-readable)"
-  placeholder: "My Awesome Project"
   validator: >-
     {% if not project_name %}
     Project name is required.
@@ -23,8 +43,12 @@ project_name:
 project_description:
   type: str
   help: "Short project description"
-  placeholder: "A Python package that does amazing things"
-  default: "A Python package"
+  default: "Short project description"
+
+project_version:
+  type: str
+  help: "Project version"
+  default: "{{ default_package_version }}"
 
 project_slug:
   type: str
@@ -44,7 +68,6 @@ author_name:
   type: str
   help: "Author's full name"
   default: "{{ 'git config user.name' | git_config }}"
-  placeholder: "John Doe"
 
 
 python_version:

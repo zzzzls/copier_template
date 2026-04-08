@@ -29,6 +29,11 @@ def slugify(value: str) -> str:
     return value
 
 
+def defult_package_version() -> str:
+    """Return a default package version."""
+    return f"{datetime.now().strftime('%Y.%m.%d')}.0"
+
+
 def git_config(key: str) -> str:
     """Get a value from git config.
 
@@ -48,48 +53,6 @@ def git_config(key: str) -> str:
         return result.stdout.strip()
     except (subprocess.SubprocessError, FileNotFoundError):
         return ""
-
-
-def github_username(_: str = "") -> str:
-    """Get the GitHub username from gh CLI or git config.
-
-    Tries the following sources in order:
-    1. GitHub CLI (gh api user)
-    2. git config github.user
-
-    Args:
-        _: Ignored input (allows use as filter).
-
-    Returns:
-        The GitHub username or empty string if not found.
-    """
-    # Try gh CLI first
-    try:
-        result = subprocess.run(
-            ["gh", "api", "user", "--jq", ".login"],
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            return result.stdout.strip()
-    except (subprocess.SubprocessError, FileNotFoundError):
-        pass
-
-    # Fall back to git config github.user
-    try:
-        result = subprocess.run(
-            ["git", "config", "github.user"],
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            return result.stdout.strip()
-    except (subprocess.SubprocessError, FileNotFoundError):
-        pass
-
-    return ""
 
 
 class SlugifyExtension(Extension):
@@ -116,7 +79,6 @@ class GitExtension(Extension):
         """
         super().__init__(environment)
         environment.filters["git_config"] = git_config
-        environment.filters["github_username"] = github_username
 
 
 def current_year(_: str = "") -> str:
@@ -131,8 +93,8 @@ def current_year(_: str = "") -> str:
     return str(datetime.now().year)
 
 
-class CurrentYearExtension(Extension):
-    """Jinja2 extension that provides the current year."""
+class GlobalExtension(Extension):
+    """Jinja2 extension that provides global variables."""
 
     def __init__(self, environment: Environment) -> None:
         """Initialize the extension.
@@ -145,3 +107,4 @@ class CurrentYearExtension(Extension):
         # ty's Jinja2 stubs incorrectly narrow globals; newer ty versions
         # may raise invalid-assignment here
         environment.globals["current_year"] = datetime.now().year
+        environment.globals["default_package_version"] = defult_package_version()

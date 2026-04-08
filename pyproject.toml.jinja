@@ -1,0 +1,60 @@
+[project]
+name = "{{project_name}}"
+version = "0.1.0"
+description = "{{project_description}}"
+readme = "README.md"
+requires-python = ">={{python_version}}"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "ruff>=0.15.9",
+]
+
+
+[tool.ruff]
+line-length = 88            
+target-version = "py311"    
+src = ["src", "tests"]      
+exclude = [                 
+  ".git",
+  ".mypy_cache",
+  ".pytest_cache",
+  ".ruff_cache",
+  ".tox",
+  ".venv",
+  "venv",
+  "__pypackages__",
+  "build",
+  "dist",
+  "node_modules",
+  "tests"
+]
+output-format = "grouped"  
+fix = true                 
+show-fixes = true          
+
+[tool.ruff.lint]           
+select = [
+  "E",    
+  "F",    
+  "I",    
+  "UP",   
+  "B",    
+  "SIM",  
+]
+ignore = [
+  "E501",   
+  "B008",   
+]
+fixable = ["ALL"]  
+unfixable = []
+
+[tool.ruff.format]
+quote-style = "double"              
+indent-style = "space"              
+skip-magic-trailing-comma = false   
+line-ending = "auto"                
+docstring-code-format = true        
+docstring-code-line-length = "dynamic"  
